@@ -37,10 +37,10 @@ type Interface interface {
 }
 
 type stream struct {
-	e float64
-	q []float64
-	n float64
-	l *list.List
+	e   float64
+	q   []float64
+	n   float64
+	l   *list.List
 	max float64
 }
 

@@ -1,13 +1,13 @@
 package quantile_test
 
 import (
+	"bufio"
 	"fmt"
 	"github.com/bmizerany/perks/quantile"
-	"log"
-	"strconv"
-	"os"
 	"io"
-	"bufio"
+	"log"
+	"os"
+	"strconv"
 )
 
 func Example() {
