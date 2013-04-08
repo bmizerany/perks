@@ -1,5 +1,7 @@
 // The quantile package implements Effective Computation of Biased Quantiles over Data Streams
 // http://www.cs.rutgers.edu/~muthu/bquant.pdf
+//
+// This package is useful for calculating targeted quantiles for large datasets within low memory and cpu bounds.
 package quantile
 
 import (
@@ -8,7 +10,9 @@ import (
 )
 
 type Interface interface {
-	// Query returns the calculated qth percentiles value.
+	// Query returns the calculated qth percentiles value. Calling Query
+	// with q not in the set quantiles given to New will have non-deterministic
+	// results.
 	Query(q float64) float64
 
 	// Insert inserts v into the list.
