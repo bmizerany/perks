@@ -41,6 +41,7 @@ type stream struct {
 	q []float64
 	n float64
 	l *list.List
+	max float64
 }
 
 // New returns an initialized stream.
@@ -86,6 +87,10 @@ func (qt *stream) mergeFunc() func(v, w float64) {
 	var r float64
 	e := qt.l.Front()
 	return func(v, w float64) {
+		if v > qt.max {
+			qt.max = v
+		}
+
 		for ; e != nil; e = e.Next() {
 			c := e.Value.(*Sample)
 			if c.Value > v {
@@ -165,8 +170,8 @@ func (qt *stream) Min() float64 {
 
 // Max returns the maximum value observed in the stream within the error epsilon.
 func (qt *stream) Max() float64 {
-	if e := qt.l.Back(); e != nil {
-		return e.Value.(*Sample).Value
+	if qt.l.Len() > 0 {
+		return qt.max
 	}
 	return math.NaN()
 }
