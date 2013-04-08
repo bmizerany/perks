@@ -17,7 +17,8 @@ func Example() {
 	}
 	bio := bufio.NewReader(f)
 
-	q := quantile.New(0.1, 0.50, 0.90, 0.99)
+	// Compute the 50th, 90th, and 99th percentile for a stream within the set error epsilon of 0.01.
+	q := quantile.New(0.01, 0.50, 0.90, 0.99)
 	for {
 		line, err := bio.ReadString('\n')
 		if err != nil {
@@ -40,8 +41,8 @@ func Example() {
 	fmt.Println("max:", q.Max())
 	// Output:
 	// perc50: 5
-	// perc90: 17
-	// perc99: 1545
+	// perc90: 14
+	// perc99: 40
 	// min: 1
 	// max: 1545
 }

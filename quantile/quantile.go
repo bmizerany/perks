@@ -44,7 +44,7 @@ type stream struct {
 	max float64
 }
 
-// New returns an initialized stream.
+// New returns an initialized stream targeted at quantiles for error e. e is usually 0.01.
 func New(e float64, quantiles ...float64) Interface {
 	x := &stream{e: e, q: quantiles, l: list.New()}
 	return &buffer{x, make(Samples, 0, 500)}
