@@ -19,15 +19,14 @@ type Interface interface {
 	// results.
 	Query(q float64) float64
 
-	// Insert inserts v into the list.
+	// Insert inserts v into the stream.
 	Insert(v float64)
 
-	// Merge merges samples into the list. This handy when
+	// Merge merges samples into the underlying streams samples. This is handy when
 	// merging multiple streams from seperate threads.
 	Merge(samples Samples)
 
-	// Samples returns a copy of the list of samples kept from the data
-	// stream.
+	// Samples returns the streams held samples.
 	Samples() Samples
 
 	// Count returns the total number of samples observed in the stream
@@ -52,7 +51,7 @@ type stream struct {
 	max float64
 }
 
-// New returns an initialized stream targeted at quantiles for error e. e is usually 0.01.
+// New returns an initialized stream for targeted quantiles using error e. e is usually 0.01.
 func New(e float64, quantiles ...float64) Interface {
 	x := &stream{e: e, q: quantiles, l: list.New()}
 	return &buffer{x, make(Samples, 0, 500)}
