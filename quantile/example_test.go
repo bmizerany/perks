@@ -10,7 +10,7 @@ import (
 	"bufio"
 )
 
-func ExampleInsert() {
+func Example() {
 	f, err := os.Open("exampledata.txt")
 	if err != nil {
 		log.Fatal(err)
@@ -36,8 +36,12 @@ func ExampleInsert() {
 	fmt.Println("perc50:", q.Query(0.50))
 	fmt.Println("perc90:", q.Query(0.90))
 	fmt.Println("perc99:", q.Query(0.99))
+	fmt.Println("min:", q.Min())
+	fmt.Println("max:", q.Max())
 	// Output:
 	// perc50: 5
 	// perc90: 17
 	// perc99: 1545
+	// min: 1
+	// max: 1545
 }
