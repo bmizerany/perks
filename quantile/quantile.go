@@ -1,7 +1,11 @@
-// The quantile package implements Effective Computation of Biased Quantiles over Data Streams
-// http://www.cs.rutgers.edu/~muthu/bquant.pdf
+// The quantile package implements Effective Computation of Biased Quantiles
+// over Data Streams http://www.cs.rutgers.edu/~muthu/bquant.pdf
 //
-// This package is useful for calculating targeted quantiles for large datasets within low memory and cpu bounds.
+// This package is useful for calculating targeted quantiles for large datasets
+// within low memory and cpu bounds. This means your trading a small amount of
+// accuracy in rank selection, for efficiency.
+//
+// NOTE: Multiple streams can be merged before a Query, allowing clients to be distributed across threads.
 package quantile
 
 import (
