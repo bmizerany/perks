@@ -1,0 +1,43 @@
+package quantile_test
+
+import (
+	"fmt"
+	"github.com/bmizerany/perks/quantile"
+	"log"
+	"strconv"
+	"os"
+	"io"
+	"bufio"
+)
+
+func ExampleInsert() {
+	f, err := os.Open("exampledata.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+	bio := bufio.NewReader(f)
+
+	q := quantile.New(0.1, 0.50, 0.90, 0.99)
+	for {
+		line, err := bio.ReadString('\n')
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			log.Fatal(err)
+		}
+		n, err := strconv.ParseFloat(line[:len(line)-1], 64)
+		if err != nil {
+			log.Fatal(err)
+		}
+		q.Insert(n)
+	}
+
+	fmt.Println("perc50:", q.Query(0.50))
+	fmt.Println("perc90:", q.Query(0.90))
+	fmt.Println("perc99:", q.Query(0.99))
+	// Output:
+	// perc50: 5
+	// perc90: 17
+	// perc99: 1545
+}
