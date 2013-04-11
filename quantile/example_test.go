@@ -23,15 +23,11 @@ func Example() {
 	fmt.Println("perc50:", q.Query(0.50))
 	fmt.Println("perc90:", q.Query(0.90))
 	fmt.Println("perc99:", q.Query(0.99))
-	fmt.Println("min:", q.Min())
-	fmt.Println("max:", q.Max())
 	fmt.Println("count:", q.Count())
 	// Output:
 	// perc50: 5
 	// perc90: 14
 	// perc99: 40
-	// min: 1
-	// max: 1545
 	// count: 2388
 }
 
