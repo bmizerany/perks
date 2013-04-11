@@ -2,10 +2,12 @@
 // over Data Streams http://www.cs.rutgers.edu/~muthu/bquant.pdf
 //
 // This package is useful for calculating targeted quantiles for large datasets
-// within low memory and cpu bounds. This means your trading a small amount of
-// accuracy in rank selection, for efficiency.
+// within low memory and CPU bounds. You trade a small amount of accuracy in
+// rank selection for efficiency. This is usually fine for a lot of large
+// datasets.
 //
-// NOTE: Multiple streams can be merged before a Query, allowing clients to be distributed across threads.
+// Multiple Stream's can be merged before a Query, allowing clients to be
+// distributed across threads. See Stream.Merge and Stream.Samples.
 package quantile
 
 import (
@@ -22,6 +24,7 @@ type Sample struct {
 	Delta float64 `json:",string"`
 }
 
+// Samples represents a slice of samples. It implements sort.Interface.
 type Samples []Sample
 
 func (a Samples) Len() int {
@@ -36,12 +39,13 @@ func (a Samples) Swap(i, j int) {
 	a[i], a[j] = a[j], a[i]
 }
 
+// Stream calculates quantiles for a stream of float64s.
 type Stream struct {
 	*stream
 	b Samples
 }
 
-// New returns an initialized stream for targeted quantiles using error e. e is usually 0.01.
+// New returns an initialized stream for targeted quantiles using error e (usually 0.01).
 func New(e float64, quantiles ...float64) *Stream {
 	x := &stream{e: e, q: quantiles, l: list.New()}
 	return &Stream{x, make(Samples, 0, 500)}
@@ -60,8 +64,8 @@ func (s *Stream) insert(sample Sample) {
 	}
 }
 
-// Query returns the calculated qth percentiles value. Calling Query with q not
-// in the set quantiles given to New will have non-deterministic results.
+// Query returns the calculated qth percentiles value. If q is not in the set
+// of quantiles provided to New, Query will have non-deterministic results.
 func (s *Stream) Query(q float64) float64 {
 	if s.flushed() {
 		// Fast path when there hasn't been enough data for a flush;
@@ -74,7 +78,7 @@ func (s *Stream) Query(q float64) float64 {
 }
 
 // Merge merges samples into the underlying streams samples. This is handy when
-// merging multiple streams from seperate threads.
+// merging multiple streams from separate threads.
 func (s *Stream) Merge(samples Samples) {
 	s.stream.merge(samples)
 }
@@ -85,7 +89,7 @@ func (s *Stream) Init() {
 	s.b = s.b[:0]
 }
 
-// Samples returns the streams held samples.
+// Samples returns stream samples held by s.
 func (s *Stream) Samples() Samples {
 	if !s.flushed() {
 		return s.b
@@ -223,7 +227,7 @@ func (s *stream) samples() Samples {
 	return samples
 }
 
-// Min returns the mininmul value observed in the stream.
+// Min returns the minimum value observed in the stream.
 func (s *stream) Min() float64 {
 	if e := s.l.Front(); e != nil {
 		return e.Value.(*Sample).Value

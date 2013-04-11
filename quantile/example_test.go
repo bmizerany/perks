@@ -1,37 +1,23 @@
+// +build go1.1
 package quantile_test
 
 import (
 	"bufio"
 	"fmt"
 	"github.com/bmizerany/perks/quantile"
-	"io"
 	"log"
 	"os"
 	"strconv"
 )
 
 func Example() {
-	f, err := os.Open("exampledata.txt")
-	if err != nil {
-		log.Fatal(err)
-	}
-	bio := bufio.NewReader(f)
+	ch := make(chan float64)
+	go readFloats(ch)
 
 	// Compute the 50th, 90th, and 99th percentile for a stream within the set error epsilon of 0.01.
 	q := quantile.New(0.01, 0.50, 0.90, 0.99)
-	for {
-		line, err := bio.ReadString('\n')
-		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			log.Fatal(err)
-		}
-		n, err := strconv.ParseFloat(line[:len(line)-1], 64)
-		if err != nil {
-			log.Fatal(err)
-		}
-		q.Insert(n)
+	for v := range ch {
+		q.Insert(v)
 	}
 
 	fmt.Println("perc50:", q.Query(0.50))
@@ -47,4 +33,24 @@ func Example() {
 	// min: 1
 	// max: 1545
 	// count: 2388
+}
+
+func readFloats(ch chan<- float64) {
+	f, err := os.Open("exampledata.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+	sc := bufio.NewScanner(f)
+	for sc.Scan() {
+		b := sc.Bytes()
+		v, err := strconv.ParseFloat(string(b), 64)
+		if err != nil {
+			log.Fatal(err)
+		}
+		ch <- v
+	}
+	if sc.Err() != nil {
+		log.Fatal(sc.Err())
+	}
+	close(ch)
 }
