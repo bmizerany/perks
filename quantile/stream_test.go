@@ -36,7 +36,6 @@ func TestQuantRandQuery(t *testing.T) {
 }
 
 func TestQuantRandMergeQuery(t *testing.T) {
-
 	ch := make(chan float64)
 	done := make(chan *Stream)
 	for i := 0; i < 2; i++ {
