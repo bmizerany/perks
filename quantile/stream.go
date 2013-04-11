@@ -83,8 +83,8 @@ func (s *Stream) Merge(samples Samples) {
 	s.stream.merge(samples)
 }
 
-// Init initializes or clears the list.
-func (s *Stream) Init() {
+// Reset reinitializes and clears the list reusing the samples buffer memory.
+func (s *Stream) Reset() {
 	s.stream.Init()
 	s.b = s.b[:0]
 }
