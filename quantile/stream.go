@@ -39,15 +39,35 @@ func (a Samples) Swap(i, j int) {
 	a[i], a[j] = a[j], a[i]
 }
 
+type Invariant func(s *stream, r float64) float64
+
+// TargetedInvarient returns an Invarient that is only concerned with a set
+// of quantile values with associated error bounds that are supplied a priori.
+func TargetedInvarient(e float64, quantiles ...float64) Invariant {
+	return func(s *stream, r float64) float64 {
+		var m float64 = math.MaxFloat64
+		var f float64
+		for _, q := range quantiles {
+			if q*s.n <= r {
+				f = (2 * e * r) / q
+			} else {
+				f = (2 * e * (s.n - r)) / (1 - q)
+			}
+			m = math.Min(m, f)
+		}
+		return m
+	}
+}
+
 // Stream calculates quantiles for a stream of float64s.
 type Stream struct {
 	*stream
 	b Samples
 }
 
-// New returns an initialized stream for targeted quantiles using error e (usually 0.01).
-func New(e float64, quantiles ...float64) *Stream {
-	x := &stream{e: e, q: quantiles, l: list.New()}
+// New returns an initialized Stream with the invarient ƒ.
+func New(ƒ Invariant) *Stream {
+	x := &stream{ƒ: ƒ, l: list.New()}
 	return &Stream{x, make(Samples, 0, 500)}
 }
 
@@ -108,29 +128,14 @@ func (s *Stream) flushed() bool {
 }
 
 type stream struct {
-	e   float64
-	q   []float64
-	n   float64
-	l   *list.List
+	n float64
+	l *list.List
+	ƒ Invariant
 }
 
 func (s *stream) Init() {
 	s.l.Init()
 	s.n = 0
-}
-
-func (s *stream) ƒ(r float64) float64 {
-	var m float64 = math.MaxFloat64
-	var f float64
-	for _, q := range s.q {
-		if q*s.n <= r {
-			f = (2 * s.e * r) / q
-		} else {
-			f = (2 * s.e * (s.n - r)) / (1 - q)
-		}
-		m = math.Min(m, f)
-	}
-	return m
 }
 
 func (s *stream) insert(v float64) {
@@ -154,7 +159,7 @@ func (s *stream) mergeFunc() func(v, w float64) {
 		for ; e != nil; e = e.Next() {
 			c := e.Value.(*Sample)
 			if c.Value > v {
-				sm := &Sample{v, w, math.Floor(s.ƒ(r)) - 1}
+				sm := &Sample{v, w, math.Floor(s.ƒ(s, r)) - 1}
 				s.l.InsertBefore(sm, e)
 				goto inserted
 			}
@@ -175,7 +180,7 @@ func (s *stream) Count() int {
 func (s *stream) query(q float64) float64 {
 	e := s.l.Front()
 	t := math.Ceil(q * s.n)
-	t += math.Ceil(s.ƒ(t) / 2)
+	t += math.Ceil(s.ƒ(s, t) / 2)
 	p := e.Value.(*Sample)
 	e = e.Next()
 	r := float64(0)
@@ -201,7 +206,7 @@ func (s *stream) compress() {
 	e = e.Prev()
 	for e != nil {
 		c := e.Value.(*Sample)
-		if c.Width+x.Width+x.Delta <= s.ƒ(r) {
+		if c.Width+x.Width+x.Delta <= s.ƒ(s, r) {
 			x.Width += c.Width
 			o := e
 			e = e.Prev()
