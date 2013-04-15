@@ -10,7 +10,7 @@ import (
 	"strconv"
 )
 
-func Example() {
+func Example_simple() {
 	ch := make(chan float64)
 	go readFloats(ch)
 
@@ -30,6 +30,36 @@ func Example() {
 	// perc99: 40
 	// count: 2388
 }
+
+func Example_mergeMultipleStreams() {
+	// Scenario:
+	// We have multiple database shards. On each shard, there is a process
+	// collecting query response times from the database logs and inserting
+	// them into a Stream (created via NewTargeted(0.90)), much like the
+	// Simple example. These processes expose a network interface for us to
+	// ask them to serialize and send us the results of their
+	// Stream.Samples so we may Merge and Query them.
+	//
+	// NOTES:
+	// * These sample sets are small, allowing us to get them
+	// across the network much faster than sending the entire list of data
+	// points.
+	//
+	// * For this to work correctly, we must supply the same quantiles
+	// a priori the process collecting the samples supplied to NewTargeted,
+	// even if we do not plan to query them all here.
+	ch := make(chan quantile.Samples)
+	getDBQuerySamples(ch)
+	q := quantile.NewTargeted(0.90)
+	for samples := range ch {
+		q.Merge(samples)
+	}
+	fmt.Println("perc50:", q.Query(0.90))
+}
+
+// This is a stub for the above example. In reality this would hit the remote
+// servers via http or something like it.
+func getDBQuerySamples(ch chan quantile.Samples) {}
 
 func readFloats(ch chan<- float64) {
 	f, err := os.Open("exampledata.txt")
