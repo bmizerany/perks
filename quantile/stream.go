@@ -1,13 +1,15 @@
-// The quantile package implements Effective Computation of Biased Quantiles
-// over Data Streams http://www.cs.rutgers.edu/~muthu/bquant.pdf
+// The quantile package implements the algorithm in the paper Effective
+// Computation of Biased Quantiles over Data Streams with both invarients.
 //
-// This package is useful for calculating targeted quantiles for large datasets
-// within low memory and CPU bounds. You trade a small amount of accuracy in
-// rank selection for efficiency. This is usually fine for a lot of large
-// datasets.
+// This package is useful for calculating hight-biased and targeted quantiles
+// for large datasets within low memory and CPU bounds. You trade a small
+// amount of accuracy in rank selection for efficiency.
 //
 // Multiple Stream's can be merged before a Query, allowing clients to be
 // distributed across threads. See Stream.Merge and Stream.Samples.
+//
+// For more detailed information about the algorithm, see:
+// http://www.cs.rutgers.edu/~muthu/bquant.pdf
 package quantile
 
 import (
@@ -42,7 +44,9 @@ func (a Samples) Swap(i, j int) {
 type Invariant func(s *stream, r float64) float64
 
 // Biased returns an Invariant for high-biased (>50th) quantiles not known a
-// priori with associated error bounds e.
+// priori with associated error bounds e (usually 0.01).
+// Biased requires space bounds O(1/e * log(en)), where n is the total inserts, in the worst case.
+// See http://www.cs.rutgers.edu/~muthu/bquant.pdf for time, space, and error properties.
 func Biased(e float64) Invariant {
 	return func(s *stream, r float64) float64 {
 		return 2 * e * r
@@ -50,7 +54,8 @@ func Biased(e float64) Invariant {
 }
 
 // Targeted returns an Invariant that is only concerned with a set
-// of quantile values with associated error bounds that are supplied a priori.
+// of quantile values with associated error bounds e (usually 0.01) that are supplied a priori.
+// See http://www.cs.rutgers.edu/~muthu/bquant.pdf for time, space, and error properties.
 func Targeted(e float64, quantiles ...float64) Invariant {
 	return func(s *stream, r float64) float64 {
 		var m float64 = math.MaxFloat64
@@ -113,7 +118,7 @@ func (s *Stream) Merge(samples Samples) {
 
 // Reset reinitializes and clears the list reusing the samples buffer memory.
 func (s *Stream) Reset() {
-	s.stream.Init()
+	s.stream.reset()
 	s.b = s.b[:0]
 }
 
@@ -141,7 +146,7 @@ type stream struct {
 	ƒ Invariant
 }
 
-func (s *stream) Init() {
+func (s *stream) reset() {
 	s.l.Init()
 	s.n = 0
 }
