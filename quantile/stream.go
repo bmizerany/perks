@@ -45,7 +45,6 @@ type Invariant func(s *stream, r float64) float64
 
 // Biased returns an Invariant for high-biased (>50th) quantiles not known a
 // priori with associated error bounds e (usually 0.01).
-// Biased requires space bounds O(1/e * log(en)), where n is the total inserts, in the worst case.
 // See http://www.cs.rutgers.edu/~muthu/bquant.pdf for time, space, and error properties.
 func Biased(e float64) Invariant {
 	return func(s *stream, r float64) float64 {
