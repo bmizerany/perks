@@ -1,15 +1,16 @@
-// The quantile package implements the algorithm in the paper Effective
-// Computation of Biased Quantiles over Data Streams with both invariants.
+// Package quantile computes approximate quantiles over an unbounded data
+// stream within low memory and CPU bounds.
 //
-// This package is useful for calculating high-biased and targeted quantiles
-// for large datasets within low memory and CPU bounds. You trade a small
-// amount of accuracy in rank selection for efficiency.
+// A small amount of accuracy is traded to achieve the above properties.
 //
-// Multiple Stream's can be merged before a Query, allowing clients to be
-// distributed across threads. See Stream.Merge and Stream.Samples.
+// Multiple streams can be merged before calling Query to generate a single set
+// of results. This is meaningful when the streams represent the same type of
+// data. See Merge and Samples.
 //
 // For more detailed information about the algorithm, see:
 // http://www.cs.rutgers.edu/~muthu/bquant.pdf
+// The quantile package implements the algorithm in the paper Effective
+// Computation of Biased Quantiles over Data Streams with both invariants.
 package quantile
 
 import (
