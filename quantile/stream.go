@@ -1,7 +1,7 @@
 // The quantile package implements the algorithm in the paper Effective
-// Computation of Biased Quantiles over Data Streams with both invarients.
+// Computation of Biased Quantiles over Data Streams with both invariants.
 //
-// This package is useful for calculating hight-biased and targeted quantiles
+// This package is useful for calculating high-biased and targeted quantiles
 // for large datasets within low memory and CPU bounds. You trade a small
 // amount of accuracy in rank selection for efficiency.
 //
@@ -43,34 +43,36 @@ func (a Samples) Swap(i, j int) {
 
 type invariant func(s *stream, r float64) float64
 
-// Biased returns an Stream for high-biased (>50th) quantiles not known a
-// priori with associated error bounds e (usually 0.01).
+// NewBiased returns an initialized Stream for high-biased quantiles (e.g.
+// 50th, 90th, 99th) not known a priori with ﬁner error guarantees for the
+// higher ranks of the data distribution.
 // See http://www.cs.rutgers.edu/~muthu/bquant.pdf for time, space, and error properties.
-func NewBiased(e float64) *Stream {
+func NewBiased() *Stream {
 	f := func(s *stream, r float64) float64 {
-		return 2 * e * r
+		return 2 * s.epsilon * r
 	}
-	return newStream(f)
+	return newStream(0.01, f)
 }
 
-// Targeted returns an Stream that is only concerned with a set
-// of quantile values with associated error bounds e (usually 0.01) that are supplied a priori.
+// NewTargeted returns an initialized Stream concerned with a particular set of
+// quantile values that are supplied a priori. Knowing these a priori reduces
+// space and computation time.
 // See http://www.cs.rutgers.edu/~muthu/bquant.pdf for time, space, and error properties.
-func NewTargeted(e float64, quantiles ...float64) *Stream {
+func NewTargeted(quantiles ...float64) *Stream {
 	f := func(s *stream, r float64) float64 {
 		var m float64 = math.MaxFloat64
 		var f float64
 		for _, q := range quantiles {
 			if q*s.n <= r {
-				f = (2 * e * r) / q
+				f = (2 * s.epsilon * r) / q
 			} else {
-				f = (2 * e * (s.n - r)) / (1 - q)
+				f = (2 * s.epsilon * (s.n - r)) / (1 - q)
 			}
 			m = math.Min(m, f)
 		}
 		return m
 	}
-	return newStream(f)
+	return newStream(0.01, f)
 }
 
 // Stream calculates quantiles for a stream of float64s.
@@ -79,8 +81,8 @@ type Stream struct {
 	b Samples
 }
 
-func newStream(ƒ invariant) *Stream {
-	x := &stream{ƒ: ƒ, l: list.New()}
+func newStream(epsilon float64, ƒ invariant) *Stream {
+	x := &stream{epsilon: epsilon, ƒ: ƒ, l: list.New()}
 	return &Stream{x, make(Samples, 0, 500)}
 }
 
@@ -97,8 +99,9 @@ func (s *Stream) insert(sample Sample) {
 	}
 }
 
-// Query returns the calculated qth percentiles value. If q is not in the set
-// of quantiles provided to New, Query will have non-deterministic results.
+// Query returns the calculated qth percentiles value. If s was created with
+// NewTargeted, and q is not in the set of quantiles provided a priori, Query
+// will return an unspecified result.
 func (s *Stream) Query(q float64) float64 {
 	if s.flushed() {
 		// Fast path when there hasn't been enough data for a flush;
@@ -111,7 +114,7 @@ func (s *Stream) Query(q float64) float64 {
 }
 
 // Merge merges samples into the underlying streams samples. This is handy when
-// merging multiple streams from separate threads.
+// merging multiple streams from separate threads, database shards, etc.
 func (s *Stream) Merge(samples Samples) {
 	s.stream.merge(samples)
 }
@@ -141,9 +144,17 @@ func (s *Stream) flushed() bool {
 }
 
 type stream struct {
-	n float64
-	l *list.List
-	ƒ invariant
+	epsilon float64
+	n       float64
+	l       *list.List
+	ƒ       invariant
+}
+
+// SetEpsilon sets the error epsilon for the Stream. The default epsilon is
+// 0.01 and is usually satisfactory.
+// To learn more, see: http://www.cs.rutgers.edu/~muthu/bquant.pdf
+func (s *stream) SetEpsilon(epsilon float64) {
+	s.epsilon = epsilon
 }
 
 func (s *stream) reset() {
