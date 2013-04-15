@@ -41,9 +41,9 @@ func (a Samples) Swap(i, j int) {
 
 type Invariant func(s *stream, r float64) float64
 
-// TargetedInvarient returns an Invarient that is only concerned with a set
+// Targeted returns an Invarient that is only concerned with a set
 // of quantile values with associated error bounds that are supplied a priori.
-func TargetedInvarient(e float64, quantiles ...float64) Invariant {
+func Targeted(e float64, quantiles ...float64) Invariant {
 	return func(s *stream, r float64) float64 {
 		var m float64 = math.MaxFloat64
 		var f float64
