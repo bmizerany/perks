@@ -41,6 +41,14 @@ func (a Samples) Swap(i, j int) {
 
 type Invariant func(s *stream, r float64) float64
 
+// Biased returns an Invarient for high-biased (>50th) quantiles not known a
+// priori with associated error bounds e.
+func Biased(e float64) Invariant {
+	return func(s *stream, r float64) float64 {
+		return 2 * e * r
+	}
+}
+
 // Targeted returns an Invarient that is only concerned with a set
 // of quantile values with associated error bounds that are supplied a priori.
 func Targeted(e float64, quantiles ...float64) Invariant {
