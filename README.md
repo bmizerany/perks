@@ -16,3 +16,8 @@ Thank you, also:
 * Andrew Gerrand (@nf)
 * Brad Fitzpatrick (@bradfitz)
 * Keith Rarick (@kr)
+
+FAQ:
+
+Q: Why not move the quantile package into the project root?
+A: I want to add more packages to perks later.
