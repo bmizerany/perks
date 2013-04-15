@@ -52,7 +52,7 @@ func NewBiased() *Stream {
 	f := func(s *stream, r float64) float64 {
 		return 2 * s.epsilon * r
 	}
-	return newStream(0.01, f)
+	return newStream(f)
 }
 
 // NewTargeted returns an initialized Stream concerned with a particular set of
@@ -73,7 +73,7 @@ func NewTargeted(quantiles ...float64) *Stream {
 		}
 		return m
 	}
-	return newStream(0.01, f)
+	return newStream(f)
 }
 
 // Stream calculates quantiles for a stream of float64s.
@@ -82,8 +82,9 @@ type Stream struct {
 	b Samples
 }
 
-func newStream(epsilon float64, ƒ invariant) *Stream {
-	x := &stream{epsilon: epsilon, ƒ: ƒ, l: list.New()}
+func newStream(ƒ invariant) *Stream {
+	const defaultEpsilon = 0.01
+	x := &stream{epsilon: defaultEpsilon, ƒ: ƒ, l: list.New()}
 	return &Stream{x, make(Samples, 0, 500)}
 }
 
