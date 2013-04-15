@@ -41,7 +41,7 @@ func (a Samples) Swap(i, j int) {
 
 type Invariant func(s *stream, r float64) float64
 
-// Biased returns an Invarient for high-biased (>50th) quantiles not known a
+// Biased returns an Invariant for high-biased (>50th) quantiles not known a
 // priori with associated error bounds e.
 func Biased(e float64) Invariant {
 	return func(s *stream, r float64) float64 {
@@ -49,7 +49,7 @@ func Biased(e float64) Invariant {
 	}
 }
 
-// Targeted returns an Invarient that is only concerned with a set
+// Targeted returns an Invariant that is only concerned with a set
 // of quantile values with associated error bounds that are supplied a priori.
 func Targeted(e float64, quantiles ...float64) Invariant {
 	return func(s *stream, r float64) float64 {
@@ -73,7 +73,7 @@ type Stream struct {
 	b Samples
 }
 
-// New returns an initialized Stream with the invarient ƒ.
+// New returns an initialized Stream with the Invariant ƒ.
 func New(ƒ Invariant) *Stream {
 	x := &stream{ƒ: ƒ, l: list.New()}
 	return &Stream{x, make(Samples, 0, 500)}
