@@ -41,22 +41,23 @@ func (a Samples) Swap(i, j int) {
 	a[i], a[j] = a[j], a[i]
 }
 
-type Invariant func(s *stream, r float64) float64
+type invariant func(s *stream, r float64) float64
 
-// Biased returns an Invariant for high-biased (>50th) quantiles not known a
+// Biased returns an Stream for high-biased (>50th) quantiles not known a
 // priori with associated error bounds e (usually 0.01).
 // See http://www.cs.rutgers.edu/~muthu/bquant.pdf for time, space, and error properties.
-func Biased(e float64) Invariant {
-	return func(s *stream, r float64) float64 {
+func NewBiased(e float64) *Stream {
+	f := func(s *stream, r float64) float64 {
 		return 2 * e * r
 	}
+	return newStream(f)
 }
 
-// Targeted returns an Invariant that is only concerned with a set
+// Targeted returns an Stream that is only concerned with a set
 // of quantile values with associated error bounds e (usually 0.01) that are supplied a priori.
 // See http://www.cs.rutgers.edu/~muthu/bquant.pdf for time, space, and error properties.
-func Targeted(e float64, quantiles ...float64) Invariant {
-	return func(s *stream, r float64) float64 {
+func NewTargeted(e float64, quantiles ...float64) *Stream {
+	f := func(s *stream, r float64) float64 {
 		var m float64 = math.MaxFloat64
 		var f float64
 		for _, q := range quantiles {
@@ -69,6 +70,7 @@ func Targeted(e float64, quantiles ...float64) Invariant {
 		}
 		return m
 	}
+	return newStream(f)
 }
 
 // Stream calculates quantiles for a stream of float64s.
@@ -77,8 +79,7 @@ type Stream struct {
 	b Samples
 }
 
-// New returns an initialized Stream with the Invariant ƒ.
-func New(ƒ Invariant) *Stream {
+func newStream(ƒ invariant) *Stream {
 	x := &stream{ƒ: ƒ, l: list.New()}
 	return &Stream{x, make(Samples, 0, 500)}
 }
@@ -142,7 +143,7 @@ func (s *Stream) flushed() bool {
 type stream struct {
 	n float64
 	l *list.List
-	ƒ Invariant
+	ƒ invariant
 }
 
 func (s *stream) reset() {
