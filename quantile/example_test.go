@@ -14,7 +14,7 @@ import (
 
 func Example_simple() {
 	ch := make(chan float64)
-	go readFloats(ch)
+	go sendFloats(ch)
 
 	// Compute the 50th, 90th, and 99th percentile.
 	q := quantile.NewTargeted(0.50, 0.90, 0.99)
@@ -91,7 +91,7 @@ func flushToDB(t time.Time, samples quantile.Samples) {
 // servers via http or something like it.
 func getDBQuerySamples(ch chan quantile.Samples) {}
 
-func readFloats(ch chan<- float64) {
+func sendFloats(ch chan<- float64) {
 	f, err := os.Open("exampledata.txt")
 	if err != nil {
 		log.Fatal(err)
