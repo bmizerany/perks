@@ -109,8 +109,11 @@ func (s *Stream) Query(q float64) float64 {
 	if s.flushed() {
 		// Fast path when there hasn't been enough data for a flush;
 		// this also yeilds better accuracy for small sets of data.
-		i := float64(len(s.b)) * q
-		return s.b[int(i)-1].Value
+		i := int(float64(len(s.b)) * q)
+		if i > 0 {
+			i -= 1
+		}
+		return s.b[i].Value
 	}
 	s.flush()
 	return s.stream.query(q)
