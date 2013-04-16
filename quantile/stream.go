@@ -7,11 +7,11 @@
 // of results. This is meaningful when the streams represent the same type of
 // data. See Merge and Samples.
 //
-// For more detailed information about the algorithm, see:
-// http://www.cs.rutgers.edu/~muthu/bquant.pdf
-//
 // The quantile package implements the algorithm in the paper Effective
 // Computation of Biased Quantiles over Data Streams with both invariants.
+//
+// For more detailed information about the algorithm, see:
+// http://www.cs.rutgers.edu/~muthu/bquant.pdf
 package quantile
 
 import (
