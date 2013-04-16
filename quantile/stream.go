@@ -76,7 +76,7 @@ func NewTargeted(quantiles ...float64) *Stream {
 	return newStream(f)
 }
 
-// Stream computes quantiles for a stream of float64s.
+// Stream computes quantiles for a stream of float64s. It is not thread-safe.
 type Stream struct {
 	*stream
 	b Samples
