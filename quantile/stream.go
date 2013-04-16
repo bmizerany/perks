@@ -77,7 +77,8 @@ func NewTargeted(quantiles ...float64) *Stream {
 	return newStream(ƒ)
 }
 
-// Stream computes quantiles for a stream of float64s. It is not thread-safe.
+// Stream computes quantiles for a stream of float64s. It is not thread-safe by
+// design. Take care when using across multiple goroutines.
 type Stream struct {
 	*stream
 	b Samples
