@@ -9,6 +9,7 @@
 //
 // For more detailed information about the algorithm, see:
 // http://www.cs.rutgers.edu/~muthu/bquant.pdf
+//
 // The quantile package implements the algorithm in the paper Effective
 // Computation of Biased Quantiles over Data Streams with both invariants.
 package quantile
