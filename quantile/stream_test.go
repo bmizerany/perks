@@ -80,6 +80,24 @@ func TestQuantRandMergeQuery(t *testing.T) {
 	}
 }
 
+func TestUncompressed(t *testing.T) {
+	tests := []float64{0.50, 0.90, 0.95, 0.99}
+	q := NewTargeted(tests...)
+	for i := 1; i <= 100; i++ {
+		q.Insert(float64(i))
+	}
+	if g := q.Count(); g != 100 {
+		t.Errorf("want count 100, got %d", g)
+	}
+	// Before compression, Query should have 100% accuracy.
+	for _, v := range tests {
+		w := v * 100
+		if g := q.Query(v); g != w {
+			t.Errorf("want %f, got %f", w, g)
+		}
+	}
+}
+
 func getPerc(x []float64, p float64) float64 {
 	k := int(float64(len(x)) * p)
 	return x[k]

@@ -109,7 +109,7 @@ func (s *Stream) Query(q float64) float64 {
 		// Fast path when there hasn't been enough data for a flush;
 		// this also yeilds better accuracy for small sets of data.
 		i := float64(len(s.b)) * q
-		return s.b[int(i)].Value
+		return s.b[int(i)-1].Value
 	}
 	s.flush()
 	return s.stream.query(q)
@@ -133,6 +133,12 @@ func (s *Stream) Samples() Samples {
 		return s.b
 	}
 	return s.stream.samples()
+}
+
+// Count returns the total number of samples observed in the stream
+// since initialization.
+func (s *Stream) Count() int {
+	return len(s.b) + s.stream.count()
 }
 
 func (s *Stream) flush() {
@@ -198,9 +204,7 @@ func (s *stream) mergeFunc() func(v, w float64) {
 	}
 }
 
-// Count returns the total number of samples observed in the stream
-// since initialization.
-func (s *stream) Count() int {
+func (s *stream) count() int {
 	return int(s.n)
 }
 
