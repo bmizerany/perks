@@ -55,7 +55,7 @@ func Example_mergeMultipleStreams() {
 	for samples := range ch {
 		q.Merge(samples)
 	}
-	fmt.Println("perc50:", q.Query(0.90))
+	fmt.Println("perc90:", q.Query(0.90))
 }
 
 func Example_window() {
