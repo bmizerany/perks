@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"time"
 )
 
 func Example_simple() {
@@ -55,6 +56,34 @@ func Example_mergeMultipleStreams() {
 		q.Merge(samples)
 	}
 	fmt.Println("perc50:", q.Query(0.90))
+}
+
+func Example_window() {
+	// Scenario: We want the 90th, 95th, and 99th percentiles for each
+	// minute.
+
+	ch := make(chan float64)
+	go readStreamValues(ch)
+
+	tick := time.NewTicker(1 * time.Minute)
+	q := quantile.NewTargeted(0.90, 0.95, 0.99)
+	for {
+		select {
+		case t := <-tick.C:
+			flushToDB(t, q.Samples())
+			q.Reset()
+		case v := <-ch:
+			q.Insert(v)
+		}
+	}
+}
+
+func readStreamValues(ch chan float64) {
+	// Use your imagination
+}
+
+func flushToDB(t time.Time, samples quantile.Samples) {
+	// Use your imagination
 }
 
 // This is a stub for the above example. In reality this would hit the remote
