@@ -98,6 +98,20 @@ func TestUncompressed(t *testing.T) {
 	}
 }
 
+func TestUncompressedOne(t *testing.T) {
+	q := NewTargeted(0.90)
+	q.Insert(3.14)
+	if g := q.Query(0.90); g != 3.14 {
+		t.Error("want PI, got", g)
+	}
+}
+
+func TestDefaults(t *testing.T) {
+	if g := NewTargeted(0.99).Query(0.99); g != 0 {
+		t.Errorf("want 0, got %f", g)
+	}
+}
+
 func getPerc(x []float64, p float64) float64 {
 	k := int(float64(len(x)) * p)
 	return x[k]
