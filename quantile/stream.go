@@ -101,7 +101,7 @@ func (s *Stream) insert(sample Sample) {
 	}
 }
 
-// Query returns the computes qth percentiles value. If s was created with
+// Query returns the computed qth percentiles value. If s was created with
 // NewTargeted, and q is not in the set of quantiles provided a priori, Query
 // will return an unspecified result.
 func (s *Stream) Query(q float64) float64 {
