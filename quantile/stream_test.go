@@ -8,7 +8,7 @@ import (
 )
 
 func TestQuantRandQuery(t *testing.T) {
-	s := NewTargeted(0.01, 0.5, 0.90, 0.99)
+	s := NewTargeted(0.5, 0.90, 0.99)
 	a := make([]float64, 0, 1e5)
 	rand.Seed(42)
 	for i := 0; i < cap(a); i++ {
@@ -40,7 +40,7 @@ func TestQuantRandMergeQuery(t *testing.T) {
 	done := make(chan *Stream)
 	for i := 0; i < 2; i++ {
 		go func() {
-			s := NewTargeted(0.01, 0.5, 0.90, 0.99)
+			s := NewTargeted(0.5, 0.90, 0.99)
 			for v := range ch {
 				s.Insert(v)
 			}

@@ -16,8 +16,8 @@ func Example_simple() {
 	ch := make(chan float64)
 	go readFloats(ch)
 
-	// Compute the 50th, 90th, and 99th percentile for a stream within the set error epsilon of 0.01.
-	q := quantile.NewTargeted(0.01, 0.50, 0.90, 0.99)
+	// Compute the 50th, 90th, and 99th percentile.
+	q := quantile.NewTargeted(0.50, 0.90, 0.99)
 	for v := range ch {
 		q.Insert(v)
 	}
