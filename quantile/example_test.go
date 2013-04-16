@@ -1,4 +1,5 @@
 // +build go1.1
+
 package quantile_test
 
 import (
@@ -63,7 +64,7 @@ func Example_window() {
 	// minute.
 
 	ch := make(chan float64)
-	go readStreamValues(ch)
+	go sendStreamValues(ch)
 
 	tick := time.NewTicker(1 * time.Minute)
 	q := quantile.NewTargeted(0.90, 0.95, 0.99)
@@ -78,7 +79,7 @@ func Example_window() {
 	}
 }
 
-func readStreamValues(ch chan float64) {
+func sendStreamValues(ch chan float64) {
 	// Use your imagination
 }
 
