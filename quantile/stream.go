@@ -50,10 +50,10 @@ type invariant func(s *stream, r float64) float64
 // higher ranks of the data distribution.
 // See http://www.cs.rutgers.edu/~muthu/bquant.pdf for time, space, and error properties.
 func NewBiased() *Stream {
-	f := func(s *stream, r float64) float64 {
+	ƒ := func(s *stream, r float64) float64 {
 		return 2 * s.epsilon * r
 	}
-	return newStream(f)
+	return newStream(ƒ)
 }
 
 // NewTargeted returns an initialized Stream concerned with a particular set of
@@ -61,7 +61,7 @@ func NewBiased() *Stream {
 // space and computation time.
 // See http://www.cs.rutgers.edu/~muthu/bquant.pdf for time, space, and error properties.
 func NewTargeted(quantiles ...float64) *Stream {
-	f := func(s *stream, r float64) float64 {
+	ƒ := func(s *stream, r float64) float64 {
 		var m float64 = math.MaxFloat64
 		var f float64
 		for _, q := range quantiles {
@@ -74,7 +74,7 @@ func NewTargeted(quantiles ...float64) *Stream {
 		}
 		return m
 	}
-	return newStream(f)
+	return newStream(ƒ)
 }
 
 // Stream computes quantiles for a stream of float64s. It is not thread-safe.
