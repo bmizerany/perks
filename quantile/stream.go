@@ -153,7 +153,8 @@ type stream struct {
 }
 
 // SetEpsilon sets the error epsilon for the Stream. The default epsilon is
-// 0.01 and is usually satisfactory.
+// 0.01 and is usually satisfactory. If needed, this must be called before all
+// Inserts.
 // To learn more, see: http://www.cs.rutgers.edu/~muthu/bquant.pdf
 func (s *stream) SetEpsilon(epsilon float64) {
 	s.epsilon = epsilon
