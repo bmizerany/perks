@@ -127,6 +127,7 @@ func (s *Stream) Query(q float64) float64 {
 // Merge merges samples into the underlying streams samples. This is handy when
 // merging multiple streams from separate threads, database shards, etc.
 func (s *Stream) Merge(samples Samples) {
+	sort.Sort(samples)
 	s.stream.merge(samples)
 }
 
