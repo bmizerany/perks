@@ -98,6 +98,16 @@ func TestUncompressed(t *testing.T) {
 	}
 }
 
+func TestUncompressedSamples(t *testing.T) {
+	q := NewTargeted(0.99)
+	for i := 1; i <= 100; i++ {
+		q.Insert(float64(i))
+	}
+	if g := q.Samples().Len(); g != 100 {
+		t.Errorf("want count 100, got %d", g)
+	}
+}
+
 func TestUncompressedOne(t *testing.T) {
 	q := NewTargeted(0.90)
 	q.Insert(3.14)

@@ -107,7 +107,7 @@ func (s *Stream) insert(sample Sample) {
 // NewTargeted, and q is not in the set of quantiles provided a priori, Query
 // will return an unspecified result.
 func (s *Stream) Query(q float64) float64 {
-	if s.flushed() {
+	if !s.flushed() {
 		// Fast path when there hasn't been enough data for a flush;
 		// this also yeilds better accuracy for small sets of data.
 		l := len(s.b)
@@ -142,6 +142,8 @@ func (s *Stream) Samples() Samples {
 	if !s.flushed() {
 		return s.b
 	}
+	s.flush()
+	s.compress()
 	return s.stream.samples()
 }
 
@@ -158,7 +160,7 @@ func (s *Stream) flush() {
 }
 
 func (s *Stream) flushed() bool {
-	return s.stream.l.Len() == 0
+	return s.stream.l.Len() > 0
 }
 
 type stream struct {
