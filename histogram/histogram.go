@@ -2,6 +2,7 @@ package histogram
 
 import (
 	"container/heap"
+	"math"
 	"sort"
 )
 
@@ -30,10 +31,13 @@ func (bs *Bins) Push(x interface{}) {
 }
 
 func (bs *Bins) Pop() interface{} {
+	return bs.remove(len(*bs) - 1)
+}
+
+func (bs *Bins) remove(n int) *Bin {
 	old := *bs
-	n := len(old)
-	x := old[n-1]
-	*bs = old[0 : n-1]
+	x := old[n]
+	*bs = old[0:n]
 	return x
 }
 
@@ -46,11 +50,7 @@ func New(maxBins int) *Histogram {
 }
 
 func (h *Histogram) Insert(f float64) {
-	h.insert(&Bin{1, f})
-}
-
-func (h *Histogram) insert(bin *Bin) {
-	h.res.insert(bin)
+	h.res.insert(&Bin{1, f})
 	h.res.compress()
 }
 
@@ -81,5 +81,22 @@ func (r *reservoir) insert(bin *Bin) {
 }
 
 func (r *reservoir) compress() {
+	for r.bins.Len() > r.maxBins {
+		minGapIndex := -1
+		minGap := math.MaxFloat64
+		for i := 0; i < r.bins.Len()-1; i++ {
+			gap := gapWeight(r.bins[i], r.bins[i+1])
+			if gap < minGap {
+				minGap = gap
+				minGapIndex = i
+			}
+		}
+		prev := r.bins[minGapIndex]
+		next := r.bins.remove(minGapIndex + 1)
+		prev.Update(next)
+	}
+}
 
+func gapWeight(prev, next *Bin) float64 {
+	return next.Mean() - prev.Mean()
 }

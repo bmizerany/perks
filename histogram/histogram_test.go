@@ -14,6 +14,9 @@ func TestHistogram(t *testing.T) {
 
 	bins := h.Bins()
 	if g := len(bins); g != 10 {
+		for _, b := range bins {
+			t.Logf("%+v", b)
+		}
 		t.Fatalf("got %d, want %d", g, 10)
 	}
 }
