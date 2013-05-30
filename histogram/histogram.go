@@ -2,6 +2,7 @@ package histogram
 
 import (
 	"container/heap"
+	"fmt"
 	"math"
 	"sort"
 )
@@ -65,7 +66,7 @@ type reservoir struct {
 }
 
 func newReservoir(maxBins int) *reservoir {
-	return &reservoir{maxBins: maxBins, bins: make(Bins, 0)}
+	return &reservoir{maxBins: maxBins}
 }
 
 func (r *reservoir) insert(bin *Bin) {
@@ -86,13 +87,14 @@ func (r *reservoir) compress() {
 		minGap := math.MaxFloat64
 		for i := 0; i < r.bins.Len()-1; i++ {
 			gap := gapWeight(r.bins[i], r.bins[i+1])
-			if gap < minGap {
+			if minGap > gap {
 				minGap = gap
 				minGapIndex = i
 			}
 		}
 		prev := r.bins[minGapIndex]
 		next := r.bins.remove(minGapIndex + 1)
+		fmt.Println("%#v", next)
 		prev.Update(next)
 	}
 }

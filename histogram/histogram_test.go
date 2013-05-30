@@ -13,6 +13,7 @@ func TestHistogram(t *testing.T) {
 	}
 
 	bins := h.Bins()
+	t.Log("n", h.res.n)
 	if g := len(bins); g != 10 {
 		for _, b := range bins {
 			t.Logf("%+v", b)
