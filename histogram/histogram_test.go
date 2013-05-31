@@ -20,9 +20,10 @@ func TestHistogram(t *testing.T) {
 		t.Fatalf("got %d bins, wanted <= %d", g, maxBins)
 	}
 
-	binCounts := count(h.Bins())
-	if binCounts != numPoints {
-		t.Fatalf("binned %d points, wanted %d", binCounts, numPoints)
+	t.Logf("%+v", bins)
+
+	if g := count(h.Bins()); g != numPoints {
+		t.Fatalf("binned %d points, wanted %d", g, numPoints)
 	}
 }
 
