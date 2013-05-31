@@ -6,8 +6,9 @@ import (
 )
 
 func TestHistogram(t *testing.T) {
-	numPoints := int(1e6)
-	maxBins := 3
+	const numPoints = 1e6
+	const maxBins = 3
+
 	h := New(maxBins)
 	for i := 0; i < numPoints; i++ {
 		f := rand.ExpFloat64()
