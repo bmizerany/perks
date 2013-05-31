@@ -6,7 +6,7 @@ import (
 )
 
 func TestHistogram(t *testing.T) {
-	numPoints := int(100)
+	numPoints := int(1e6)
 	maxBins := 3
 	h := New(maxBins)
 	for i := 0; i < numPoints; i++ {
@@ -15,20 +15,21 @@ func TestHistogram(t *testing.T) {
 	}
 
 	bins := h.Bins()
-	t.Log("n", h.res.n)
-	binCounts := 0
 	if g := len(bins); g > maxBins {
-		for _, b := range bins {
-			binCounts += b.Count
-			t.Logf("%+v", b)
-		}
 		t.Fatalf("got %d bins, wanted <= %d", g, maxBins)
 	}
 
-	for _, b := range bins {
-		binCounts += b.Count
-	}
+	binCounts := count(h.Bins())
 	if binCounts != numPoints {
 		t.Fatalf("binned %d points, wanted %d", binCounts, numPoints)
 	}
 }
+
+func count(bins Bins) int {
+	binCounts := 0
+	for _, b := range bins {
+		binCounts += b.Count
+	}
+	return binCounts
+}
+
