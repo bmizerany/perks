@@ -2,7 +2,6 @@ package histogram
 
 import (
 	"container/heap"
-	"fmt"
 	"math"
 	"sort"
 )
@@ -38,7 +37,16 @@ func (bs *Bins) Pop() interface{} {
 func (bs *Bins) remove(n int) *Bin {
 	old := *bs
 	x := old[n]
-	*bs = old[0:n]
+	h := old[0:n]
+	if n < len(old)-1 {
+		t := old[n+1:]
+		out := make([]*Bin, len(old)-1)
+		copy(out, h)
+		copy(out[len(h):], t)
+		*bs = out
+	} else {
+		*bs = h
+	}
 	return x
 }
 
@@ -94,7 +102,6 @@ func (r *reservoir) compress() {
 		}
 		prev := r.bins[minGapIndex]
 		next := r.bins.remove(minGapIndex + 1)
-		fmt.Println("%#v", next)
 		prev.Update(next)
 	}
 }

@@ -32,4 +32,3 @@ func count(bins Bins) int {
 	}
 	return binCounts
 }
-
