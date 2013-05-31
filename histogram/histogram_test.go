@@ -6,18 +6,29 @@ import (
 )
 
 func TestHistogram(t *testing.T) {
-	h := New(10)
-	for i := 0; i < 1e6; i++ {
+	numPoints := int(1e6)
+	maxBins := 3
+	h := New(maxBins)
+	for i := 0; i < numPoints; i++ {
 		f := rand.ExpFloat64()
 		h.Insert(f)
 	}
 
 	bins := h.Bins()
-	t.Log("n", h.res.n)
-	if g := len(bins); g != 10 {
-		for _, b := range bins {
-			t.Logf("%+v", b)
-		}
-		t.Fatalf("got %d, want %d", g, 10)
+	if g := len(bins); g > maxBins {
+		t.Fatalf("got %d bins, wanted <= %d", g, maxBins)
 	}
+
+	binCounts := count(h.Bins())
+	if binCounts != numPoints {
+		t.Fatalf("binned %d points, wanted %d", binCounts, numPoints)
+	}
+}
+
+func count(bins Bins) int {
+	binCounts := 0
+	for _, b := range bins {
+		binCounts += b.Count
+	}
+	return binCounts
 }
