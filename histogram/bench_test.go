@@ -1,8 +1,8 @@
 package histogram
 
 import (
-	"testing"
 	"math/rand"
+	"testing"
 )
 
 func BenchmarkInsert10Bins(b *testing.B) {
