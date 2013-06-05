@@ -37,12 +37,11 @@ func (bs *Bins) Pop() interface{} {
 }
 
 func (bs *Bins) remove(n int) *Bin {
-	a := *bs
-	if n < 0 || len(a) < n {
+	if n < 0 || len(*bs) < n {
 		return nil
 	}
-	x := a[n]
-	*bs = append(a[:n], a[n+1:]...)
+	x := (*bs)[n]
+	*bs = append((*bs)[:n], (*bs)[n+1:]...)
 	return x
 }
 
