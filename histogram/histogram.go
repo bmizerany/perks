@@ -79,6 +79,8 @@ func (r *reservoir) insert(bin *Bin) {
 		return r.bins[i].Mean() >= bin.Mean()
 	})
 	if i < 0 || i == r.bins.Len() {
+		// TODO(blake): Maybe use an .insert(i, bin) instead of
+		// performing the extra work of a heap.Push.
 		heap.Push(&r.bins, bin)
 		return
 	}
