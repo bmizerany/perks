@@ -81,5 +81,10 @@ func (s *Stream) Query() Samples {
 		sm = append(sm, e)
 	}
 	sort.Sort(sort.Reverse(sm))
+
+	if len(sm) < s.k {
+		return sm
+	}
+
 	return sm[:s.k]
 }
