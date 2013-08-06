@@ -81,13 +81,14 @@ func NewTargeted(quantiles ...float64) *Stream {
 // design. Take care when using across multiple goroutines.
 type Stream struct {
 	*stream
-	b Samples
+	b      Samples
+	sorted bool
 }
 
 func newStream(ƒ invariant) *Stream {
 	const defaultEpsilon = 0.01
 	x := &stream{epsilon: defaultEpsilon, ƒ: ƒ, l: list.New()}
-	return &Stream{x, make(Samples, 0, 500)}
+	return &Stream{x, make(Samples, 0, 500), true}
 }
 
 // Insert inserts v into the stream.
@@ -97,6 +98,7 @@ func (s *Stream) Insert(v float64) {
 
 func (s *Stream) insert(sample Sample) {
 	s.b = append(s.b, sample)
+	s.sorted = false
 	if len(s.b) == cap(s.b) {
 		s.flush()
 		s.compress()
@@ -118,6 +120,7 @@ func (s *Stream) Query(q float64) float64 {
 		if i > 0 {
 			i -= 1
 		}
+		s.maybeSort()
 		return s.b[i].Value
 	}
 	s.flush()
@@ -154,9 +157,16 @@ func (s *Stream) Count() int {
 }
 
 func (s *Stream) flush() {
-	sort.Sort(s.b)
+	s.maybeSort()
 	s.stream.merge(s.b)
 	s.b = s.b[:0]
+}
+
+func (s *Stream) maybeSort() {
+	if !s.sorted {
+		s.sorted = true
+		sort.Sort(s.b)
+	}
 }
 
 func (s *Stream) flushed() bool {

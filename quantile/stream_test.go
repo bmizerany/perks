@@ -83,7 +83,7 @@ func TestQuantRandMergeQuery(t *testing.T) {
 func TestUncompressed(t *testing.T) {
 	tests := []float64{0.50, 0.90, 0.95, 0.99}
 	q := NewTargeted(tests...)
-	for i := 1; i <= 100; i++ {
+	for i := 100; i > 0; i-- {
 		q.Insert(float64(i))
 	}
 	if g := q.Count(); g != 100 {
