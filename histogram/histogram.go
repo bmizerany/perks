@@ -1,5 +1,5 @@
 // Package histogram provides a Go implementation of BigML's histogram package
-// for Clojure/Java. It is currently experiemental.
+// for Clojure/Java. It is currently experimental.
 package histogram
 
 import (
