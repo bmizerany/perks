@@ -30,22 +30,14 @@ type Sample struct {
 // Samples represents a slice of samples. It implements sort.Interface.
 type Samples []Sample
 
-func (a Samples) Len() int {
-	return len(a)
-}
-
-func (a Samples) Less(i, j int) bool {
-	return a[i].Value < a[j].Value
-}
-
-func (a Samples) Swap(i, j int) {
-	a[i], a[j] = a[j], a[i]
-}
+func (a Samples) Len() int           { return len(a) }
+func (a Samples) Less(i, j int) bool { return a[i].Value < a[j].Value }
+func (a Samples) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 
 type invariant func(s *stream, r float64) float64
 
 // NewBiased returns an initialized Stream for high-biased quantiles (e.g.
-// 50th, 90th, 99th) not known a priori with ﬁner error guarantees for the
+// 50th, 90th, 99th) not known a priori with finer error guarantees for the
 // higher ranks of the data distribution.
 // See http://www.cs.rutgers.edu/~muthu/bquant.pdf for time, space, and error properties.
 func NewBiased() *Stream {
@@ -112,7 +104,7 @@ func (s *Stream) insert(sample Sample) {
 func (s *Stream) Query(q float64) float64 {
 	if !s.flushed() {
 		// Fast path when there hasn't been enough data for a flush;
-		// this also yeilds better accuracy for small sets of data.
+		// this also yields better accuracy for small sets of data.
 		l := len(s.b)
 		if l == 0 {
 			return 0
