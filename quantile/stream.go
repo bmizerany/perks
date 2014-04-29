@@ -193,39 +193,29 @@ func (s *stream) reset() {
 }
 
 func (s *stream) insert(v float64) {
-	fn := s.mergeFunc()
-	fn(v, 1)
+	s.merge(Samples{{v, 1, 0}})
 }
 
 func (s *stream) merge(samples Samples) {
-	fn := s.mergeFunc()
-	for _, s := range samples {
-		fn(s.Value, s.Width)
-	}
-}
-
-func (s *stream) mergeFunc() func(v, w float64) {
-	// NOTE: I used a goto over defer because it bought me a few extra
-	// nanoseconds. I know. I know.
 	var r float64
 	i := 0
-	return func(v, w float64) {
+	for _, sample := range samples {
 		for ; i < len(s.l); i++ {
 			c := s.l[i]
-			if c.Value > v {
+			if c.Value > sample.Value {
 				// Insert at position i.
 				s.l = append(s.l, nil)
 				copy(s.l[i+1:], s.l[i:])
-				s.l[i] = &Sample{v, w, math.Floor(s.ƒ(s, r)) - 1}
+				s.l[i] = &Sample{sample.Value, sample.Width, math.Floor(s.ƒ(s, r)) - 1}
 				i++
 				goto inserted
 			}
 			r += c.Width
 		}
-		s.l = append(s.l, &Sample{v, w, 0})
+		s.l = append(s.l, &Sample{sample.Value, sample.Width, 0})
 		i++
 	inserted:
-		s.n += w
+		s.n += sample.Width
 	}
 }
 
