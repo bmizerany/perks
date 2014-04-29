@@ -15,7 +15,6 @@
 package quantile
 
 import (
-	"container/list"
 	"math"
 	"sort"
 )
@@ -87,7 +86,7 @@ type Stream struct {
 
 func newStream(ƒ invariant) *Stream {
 	const defaultEpsilon = 0.01
-	x := &stream{epsilon: defaultEpsilon, ƒ: ƒ, l: list.New()}
+	x := &stream{epsilon: defaultEpsilon, ƒ: ƒ}
 	return &Stream{x, make(Samples, 0, 500), true}
 }
 
@@ -170,13 +169,13 @@ func (s *Stream) maybeSort() {
 }
 
 func (s *Stream) flushed() bool {
-	return s.stream.l.Len() > 0
+	return len(s.stream.l) > 0
 }
 
 type stream struct {
 	epsilon float64
 	n       float64
-	l       *list.List
+	l       []*Sample
 	ƒ       invariant
 }
 
@@ -189,7 +188,7 @@ func (s *stream) SetEpsilon(epsilon float64) {
 }
 
 func (s *stream) reset() {
-	s.l.Init()
+	s.l = s.l[:0]
 	s.n = 0
 }
 
@@ -209,18 +208,22 @@ func (s *stream) mergeFunc() func(v, w float64) {
 	// NOTE: I used a goto over defer because it bought me a few extra
 	// nanoseconds. I know. I know.
 	var r float64
-	e := s.l.Front()
+	i := 0
 	return func(v, w float64) {
-		for ; e != nil; e = e.Next() {
-			c := e.Value.(*Sample)
+		for ; i < len(s.l); i++ {
+			c := s.l[i]
 			if c.Value > v {
-				sm := &Sample{v, w, math.Floor(s.ƒ(s, r)) - 1}
-				s.l.InsertBefore(sm, e)
+				// Insert at position i.
+				s.l = append(s.l, nil)
+				copy(s.l[i+1:], s.l[i:])
+				s.l[i] = &Sample{v, w, math.Floor(s.ƒ(s, r)) - 1}
+				i++
 				goto inserted
 			}
 			r += c.Width
 		}
-		s.l.PushBack(&Sample{v, w, 0})
+		s.l = append(s.l, &Sample{v, w, 0})
+		i++
 	inserted:
 		s.n += w
 	}
@@ -231,51 +234,46 @@ func (s *stream) count() int {
 }
 
 func (s *stream) query(q float64) float64 {
-	e := s.l.Front()
 	t := math.Ceil(q * s.n)
 	t += math.Ceil(s.ƒ(s, t) / 2)
-	p := e.Value.(*Sample)
-	e = e.Next()
+	p := s.l[0]
 	r := float64(0)
-	for e != nil {
-		c := e.Value.(*Sample)
+	for _, c := range s.l[1:] {
 		if r+c.Width+c.Delta > t {
 			return p.Value
 		}
 		r += p.Width
 		p = c
-		e = e.Next()
 	}
 	return p.Value
 }
 
 func (s *stream) compress() {
-	if s.l.Len() < 2 {
+	if len(s.l) < 2 {
 		return
 	}
-	e := s.l.Back()
-	x := e.Value.(*Sample)
+	x := s.l[len(s.l)-1]
 	r := s.n - 1 - x.Width
-	e = e.Prev()
-	for e != nil {
-		c := e.Value.(*Sample)
+
+	for i := len(s.l) - 2; i >= 0; i-- {
+		c := s.l[i]
 		if c.Width+x.Width+x.Delta <= s.ƒ(s, r) {
 			x.Width += c.Width
-			o := e
-			e = e.Prev()
-			s.l.Remove(o)
+			// Remove element at i.
+			copy(s.l[i:], s.l[i+1:])
+			s.l[len(s.l)-1] = nil
+			s.l = s.l[:len(s.l)-1]
 		} else {
 			x = c
-			e = e.Prev()
 		}
 		r -= c.Width
 	}
 }
 
 func (s *stream) samples() Samples {
-	samples := make(Samples, 0, s.l.Len())
-	for e := s.l.Front(); e != nil; e = e.Next() {
-		samples = append(samples, *e.Value.(*Sample))
+	samples := make(Samples, len(s.l))
+	for i, c := range s.l {
+		samples[i] = *c
 	}
 	return samples
 }
