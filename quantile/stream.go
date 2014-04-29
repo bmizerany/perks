@@ -69,7 +69,9 @@ func NewTargeted(quantiles ...float64) *Stream {
 			} else {
 				f = (2 * s.epsilon * (s.n - r)) / (1 - q)
 			}
-			m = math.Min(m, f)
+			if f < m {
+				m = f
+			}
 		}
 		return m
 	}
