@@ -36,3 +36,22 @@ func TestTopK(t *testing.T) {
 		}
 	}
 }
+
+func TestQuery(t *testing.T) {
+	queryTests := []struct {
+		value string
+		expected int
+	}{
+		{"a", 1},
+		{"b", 2},
+		{"c", 2},
+	}
+
+	stream := New(2)
+	for _, tt := range queryTests {
+		stream.Insert(tt.value)
+		if n := len(stream.Query()); n != tt.expected {
+			t.Errorf("want %d, got %d", tt.expected, n)
+		}
+	}
+}
