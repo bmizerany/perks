@@ -80,7 +80,11 @@ type Stream struct {
 
 func newStream(ƒ invariant) *Stream {
 	const defaultEpsilon = 0.01
-	x := &stream{epsilon: defaultEpsilon, ƒ: ƒ}
+	x := &stream{
+		epsilon: defaultEpsilon,
+		ƒ:       ƒ,
+		pool:    newSamplePool(1024),
+	}
 	return &Stream{x, make(Samples, 0, 500), true}
 }
 
@@ -171,6 +175,7 @@ type stream struct {
 	n       float64
 	l       []*Sample
 	ƒ       invariant
+	pool    *samplePool
 }
 
 // SetEpsilon sets the error epsilon for the Stream. The default epsilon is
@@ -182,6 +187,9 @@ func (s *stream) SetEpsilon(epsilon float64) {
 }
 
 func (s *stream) reset() {
+	for _, sample := range s.l {
+		s.pool.Put(sample)
+	}
 	s.l = s.l[:0]
 	s.n = 0
 }
@@ -200,13 +208,13 @@ func (s *stream) merge(samples Samples) {
 				// Insert at position i.
 				s.l = append(s.l, nil)
 				copy(s.l[i+1:], s.l[i:])
-				s.l[i] = &Sample{sample.Value, sample.Width, math.Floor(s.ƒ(s, r)) - 1}
+				s.l[i] = s.pool.Get(sample.Value, sample.Width, math.Floor(s.ƒ(s, r))-1)
 				i++
 				goto inserted
 			}
 			r += c.Width
 		}
-		s.l = append(s.l, &Sample{sample.Value, sample.Width, 0})
+		s.l = append(s.l, s.pool.Get(sample.Value, sample.Width, 0))
 		i++
 	inserted:
 		s.n += sample.Width
@@ -247,6 +255,7 @@ func (s *stream) compress() {
 			copy(s.l[i:], s.l[i+1:])
 			s.l[len(s.l)-1] = nil
 			s.l = s.l[:len(s.l)-1]
+			s.pool.Put(c)
 		} else {
 			x = c
 		}
