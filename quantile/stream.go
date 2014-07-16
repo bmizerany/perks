@@ -169,7 +169,7 @@ func (s *Stream) flushed() bool {
 type stream struct {
 	epsilon float64
 	n       float64
-	l       []*Sample
+	l       []Sample
 	ƒ       invariant
 }
 
@@ -198,15 +198,15 @@ func (s *stream) merge(samples Samples) {
 			c := s.l[i]
 			if c.Value > sample.Value {
 				// Insert at position i.
-				s.l = append(s.l, nil)
+				s.l = append(s.l, Sample{})
 				copy(s.l[i+1:], s.l[i:])
-				s.l[i] = &Sample{sample.Value, sample.Width, math.Floor(s.ƒ(s, r)) - 1}
+				s.l[i] = Sample{sample.Value, sample.Width, math.Floor(s.ƒ(s, r)) - 1}
 				i++
 				goto inserted
 			}
 			r += c.Width
 		}
-		s.l = append(s.l, &Sample{sample.Value, sample.Width, 0})
+		s.l = append(s.l, Sample{sample.Value, sample.Width, 0})
 		i++
 	inserted:
 		s.n += sample.Width
@@ -242,10 +242,9 @@ func (s *stream) compress() {
 	for i := len(s.l) - 2; i >= 0; i-- {
 		c := s.l[i]
 		if c.Width+x.Width+x.Delta <= s.ƒ(s, r) {
-			x.Width += c.Width
+			s.l[i] = Sample{x.Value, x.Width+c.Width, x.Delta}
 			// Remove element at i.
 			copy(s.l[i:], s.l[i+1:])
-			s.l[len(s.l)-1] = nil
 			s.l = s.l[:len(s.l)-1]
 		} else {
 			x = c
@@ -256,8 +255,6 @@ func (s *stream) compress() {
 
 func (s *stream) samples() Samples {
 	samples := make(Samples, len(s.l))
-	for i, c := range s.l {
-		samples[i] = *c
-	}
+	copy(samples, s.l)
 	return samples
 }
