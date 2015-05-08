@@ -23,7 +23,7 @@ func TestTopK(t *testing.T) {
 
 	var sm Samples
 	for x, s := range m {
-		sm = append(sm, &Element{x, s})
+		sm = append(sm, &Element{Value: x, Count: s})
 	}
 	sort.Sort(sort.Reverse(sm))
 
