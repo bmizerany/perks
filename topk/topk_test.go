@@ -61,24 +61,31 @@ func TestTopElements(t *testing.T) {
 		}
 	}
 
-	// Insert 1 twice more so that "2" is the smallest element with a count of 2,
-	// and then insert N * 2 four times. "2" should drop out of the top k, and
-	// N * 2 should appear in the sample.
+	// Insert 1 three more times so that "2" is the smallest element with a count
+	// of 2, followed by "3" with a count of 3. Insert N * 2. "2" and "3" should
+	// not appear in the top k. N * 2 should appear with a value of 4 + 1.
 	newElement := fmt.Sprintf("%d", N*2)
 	stream.Insert("1")
 	stream.Insert("1")
-	stream.Insert(newElement)
-	stream.Insert(newElement)
-	stream.Insert(newElement)
+	stream.Insert("1")
 	stream.Insert(newElement)
 
 	var sawNewElement bool
 	for _, sample := range stream.Query() {
-		if sample.Value == "2" {
-			t.Fatalf("expected 2 to drop")
-		}
-		if sample.Value == newElement {
+		switch sample.Value {
+		case "2", "3":
+			t.Fatalf("saw elements that should have dropped")
+		case "1":
+			if sample.Count != 4 {
+				t.Fatalf("expected '1' to have a count of 4")
+			}
+		case newElement:
 			sawNewElement = true
+			if sample.Count != 5 {
+				t.Fatalf("expected new element to have a count of 5")
+			}
+		default:
+			// Do nothing.
 		}
 	}
 	if !sawNewElement {
