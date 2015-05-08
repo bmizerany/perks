@@ -1,6 +1,7 @@
 package topk
 
 import (
+	"container/heap"
 	"sort"
 )
 
@@ -44,21 +45,22 @@ func (sm *Samples) Pop() interface{} {
 }
 
 type Stream struct {
-	k   int
-	mon map[string]*Element
-
-	// the minimum Element
-	min *Element
+	k    int
+	mon  map[string]*Element
+	heap Samples
 }
 
 func New(k int) *Stream {
 	s := new(Stream)
 	s.k = k
-	s.mon = make(map[string]*Element)
-	s.min = &Element{}
 
 	// Track k+1 so that less frequenet items contended for that spot,
 	// resulting in k being more accurate.
+	s.mon = make(map[string]*Element)
+	// Don't need to call heap.Init(&s.heap) here, since the heap starts empty.
+	s.heap = make(Samples, 0, k+1)
+	heap.Init(&s.heap)
+
 	return s
 }
 
@@ -74,22 +76,30 @@ func (s *Stream) Merge(sm Samples) {
 
 func (s *Stream) insert(in *Element) {
 	e := s.mon[in.Value]
+
+	// Already tracking the element. Update the value and resort the heap.
 	if e != nil {
-		e.Count++
+		e.Count += in.Count
+		heap.Fix(&s.heap, e.index)
 	} else {
 		if len(s.mon) < s.k+1 {
-			e = &Element{Value: in.Value, Count: in.Count}
-			s.mon[in.Value] = e
+			// New value, fewer than k+1 values being tracked. Add a new element.
+			newElement := &Element{Value: in.Value, Count: in.Count}
+			s.mon[in.Value] = newElement
+			s.heap.Push(newElement)
 		} else {
-			e = s.min
-			delete(s.mon, e.Value)
-			e.Value = in.Value
-			e.Count += in.Count
-			s.min = e
+			// New value, already tracking k+1 values. Replace the Value of the minimum
+			// element with the new element and then increment.
+
+			min := s.heap[0]
+			//  Fix the heap.
+			min.Value = in.Value
+			min.Count += in.Count
+			heap.Fix(&s.heap, min.index)
+			// Update the index map.
+			delete(s.mon, min.Value)
+			s.mon[in.Value] = min
 		}
-	}
-	if e.Count < s.min.Count {
-		s.min = e
 	}
 }
 
@@ -103,6 +113,5 @@ func (s *Stream) Query() Samples {
 	if len(sm) < s.k {
 		return sm
 	}
-
 	return sm[:s.k]
 }
