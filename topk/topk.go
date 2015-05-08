@@ -5,7 +5,9 @@ import (
 	"sort"
 )
 
-// http://www.cs.ucsb.edu/research/tech_reports/reports/2005-23.pdf
+// An implementation of the SpaceSaving algorithm by Metwally et al
+//
+// https://icmi.cs.ucsb.edu/research/tech_reports/reports/2005-23.pdf
 
 type Element struct {
 	Value string
