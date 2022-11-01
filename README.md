@@ -9,7 +9,7 @@ http://godoc.org/github.com/bmizerany/perks
 A very special thank you and shout out to Graham Cormode (Rutgers University),
 Flip Korn (AT&T Labs–Research), S. Muthukrishnan (Rutgers University), and
 Divesh Srivastava (AT&T Labs–Research) for their research and publication of
-[Effective Computation of Biased Quantiles over Data Streams](http://www.cs.rutgers.edu/~muthu/bquant.pdf)
+[Effective Computation of Biased Quantiles over Data Streams](http://dimacs.rutgers.edu/~graham/pubs/papers/bquant-icde.pdf)
 
 Thank you, also:
 * Armon Dadgar (@armon)
