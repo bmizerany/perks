@@ -11,7 +11,7 @@
 //
 // Effective Computation of Biased Quantiles over Data Streams
 //
-// http://www.cs.rutgers.edu/~muthu/bquant.pdf
+// http://dimacs.rutgers.edu/~graham/pubs/papers/bquant-icde.pdf
 package quantile
 
 import (
@@ -39,7 +39,7 @@ type invariant func(s *stream, r float64) float64
 // NewBiased returns an initialized Stream for high-biased quantiles (e.g.
 // 50th, 90th, 99th) not known a priori with finer error guarantees for the
 // higher ranks of the data distribution.
-// See http://www.cs.rutgers.edu/~muthu/bquant.pdf for time, space, and error properties.
+// See http://dimacs.rutgers.edu/~graham/pubs/papers/bquant-icde.pdf for time, space, and error properties.
 func NewBiased() *Stream {
 	ƒ := func(s *stream, r float64) float64 {
 		return 2 * s.epsilon * r
@@ -50,7 +50,7 @@ func NewBiased() *Stream {
 // NewTargeted returns an initialized Stream concerned with a particular set of
 // quantile values that are supplied a priori. Knowing these a priori reduces
 // space and computation time.
-// See http://www.cs.rutgers.edu/~muthu/bquant.pdf for time, space, and error properties.
+// See http://dimacs.rutgers.edu/~graham/pubs/papers/bquant-icde.pdf for time, space, and error properties.
 func NewTargeted(quantiles ...float64) *Stream {
 	ƒ := func(s *stream, r float64) float64 {
 		var m float64 = math.MaxFloat64
@@ -176,7 +176,7 @@ type stream struct {
 // SetEpsilon sets the error epsilon for the Stream. The default epsilon is
 // 0.01 and is usually satisfactory. If needed, this must be called before all
 // Inserts.
-// To learn more, see: http://www.cs.rutgers.edu/~muthu/bquant.pdf
+// To learn more, see: http://dimacs.rutgers.edu/~graham/pubs/papers/bquant-icde.pdf
 func (s *stream) SetEpsilon(epsilon float64) {
 	s.epsilon = epsilon
 }
